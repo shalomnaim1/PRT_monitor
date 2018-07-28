@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PRT Dashboard</title>
+    <meta http-equiv="refresh" content="600">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div>
+        <br>
+        <form action="/change">
+            RP ID: <input type="text" name="id">
+            <input type="submit" name="action" value="add">
+            <input type="submit" name="action" value="remove">
+        </form>
+        <br>
+
+    </div>
+    <div>
+    <table class="table">
+        <tr>
+            <th>Title</th>
+            <th>PR ID</th>
+            <th>Status</th>
+            <th>PRT link</th>
+        </tr>
+
+        {% for pr in prs%}
+        <tr>
+
+            <td>{{ pr.title }}</td>
+            <td>{{ pr.id }} </td>
+            <td>{{ pr.state }} </td>
+            <td>
+                <a href={{ pr.link }}>link </a>
+            </td>
+
+        </tr>
+        {% endfor %}
+        </div>
+    </table>
+</body>
+</html>
