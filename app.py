@@ -51,6 +51,7 @@ class prs_monitor(object):
     def __init__(self, pr_list_file):
         self.load_pr_list(pr_list_file)
         self.keep_running = True
+        self.update_threads = []
         self.update_pr_statuses()
 
 
@@ -71,7 +72,10 @@ class prs_monitor(object):
 
     def update_pr_statuses(self):
         for pr in self.prs:
-            pr.update()
+            t = Thread(target=pr.update)
+            t.daemon = True
+            self.update_threads.append(t)
+            t.start()
 
     def update(self):
         time_passed = 0
@@ -79,7 +83,10 @@ class prs_monitor(object):
             if time_passed == STEEP_TIME:
                 print "DEBUG: Updating statuses"
                 self.update_pr_statuses()
+                map(lambda t:t.join, self.update_threads)
+                self.update_threads = []
                 time_passed = 0
+
             sleep(5)
 
     def add_pr(self, id):
