@@ -1,6 +1,6 @@
 #!/bin/python
 
-from flask import Flask, render_template
+from flask import Flask, render_template,redirect, url_for
 import requests
 from flask import request
 from threading import Thread
@@ -90,10 +90,11 @@ class prs_monitor(object):
             sleep(5)
 
     def add_pr(self, id):
-        new_pr = pr(id)
-        new_pr.update()
+        if id not in [_pr.id for _pr in self.prs]:
+            new_pr = pr(id)
+            new_pr.update()
 
-        self.prs.append(new_pr)
+            self.prs.append(new_pr)
 
     def remove_pr(self, id):
         self.prs = [pr for pr in self.prs if pr.id != int(id)]
@@ -113,13 +114,13 @@ def show_deshboard():
 @app.route('/change')
 def change_pr():
     action = request.args.get("action")
-    id = request.args.get("id")
+    id = int(request.args.get("id"))
 
     actions = {"add": monitor_instance.add_pr, "remove": monitor_instance.remove_pr}
 
     actions[action](id)
 
-    return render_template("main.html", prs=monitor_instance.prs)
+    return redirect(url_for("show_deshboard"))
 
 if __name__ == '__main__':
     atexit.register(teardown)
