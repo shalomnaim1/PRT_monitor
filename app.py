@@ -68,6 +68,9 @@ class prs_monitor(object):
         self.update_state.daemon = True
         self.update_state.start()
 
+        if not self.prs:
+            print "Empty PR list was found"
+            
     def load_pr_list(self,path):
         if os.path.isfile(path):
             with open(path, 'r+') as f:
@@ -92,15 +95,14 @@ class prs_monitor(object):
     def update(self):
         time_passed = 0
         while self.keep_running:
-            if time_passed <= STEEP_TIME:
+            if time_passed >= STEEP_TIME:
                 print "DEBUG: Updating statuses"
                 self.update_pr_statuses()
                 map(lambda t:t.join, self.update_threads)
                 self.update_threads = []
                 time_passed = 0
-                time_passed += 5
-
             sleep(5)
+            time_passed += 5
 
     def add_pr(self, id):
         if id not in [_pr.id for _pr in self.prs]:
