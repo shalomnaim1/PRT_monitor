@@ -13,6 +13,7 @@ app = Flask(__name__)
 pr_list_file = "pr_list.txt"
 PR_STAT_URL = "http://10.16.4.32/trackerbot/api/pr/{id}/"
 PRT_LINK = "http://10.16.4.32/trackerbot/pr/pr/{id}"
+GITHUB_LINK = "https://github.com/ManageIQ/integration_tests/pull/{id}"
 STEEP_TIME = 30
 
 class pr(object):
@@ -53,8 +54,14 @@ class pr(object):
             return rc
 
     @property
-    def link(self):
+    def prt_link(self):
         return PRT_LINK.format(id=self.id)
+
+
+    @property
+    def github_link(self):
+        return GITHUB_LINK.format(id=self.id)
+
 
 class prs_monitor(object):
     def __init__(self, pr_list_file):
