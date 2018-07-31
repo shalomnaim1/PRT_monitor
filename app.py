@@ -5,6 +5,7 @@ import requests
 from flask import request
 from threading import Thread
 from time import sleep
+import os.path
 import atexit
 
 app = Flask(__name__)
@@ -60,8 +61,11 @@ class prs_monitor(object):
         self.update_state.start()
 
     def load_pr_list(self,path):
-        with open(path, 'r+') as f:
-            self.prs = [pr(int(pr_id)) for pr_id in f.readlines()]
+        if os.path.isfile(path):
+            with open(path, 'r+') as f:
+                self.prs = [pr(int(pr_id)) for pr_id in f.readlines()]
+        else:
+            self.prs =[]
 
     def dump_prs(self):
         print "Dumpping..."
