@@ -28,21 +28,29 @@ class pr(object):
         return "ID:{id} TITLE:{title} STATE:{state}".format(**self.__dict__)
 
     def update(self):
+        rc = True
+        try:
+            res = requests.get(PR_STAT_URL.format(id=self.id))
 
-        res = requests.get(PR_STAT_URL.format(id=self.id))
-
-        if res.status_code == 200:
-            res = res.json()
-        else:
-            print "Request failed for PR #{id}".format(id=self.id)
+            if res.status_code == 200:
+                res = res.json()
+                self.id = res["number"]
+                self.title = res["title"]
+                if res["runs"]:
+                    self.state = res["runs"][0]["result"]
+                else:
+                    self.state = "Never ran in PRT yet..."
+            else:
+                print "Request failed for PR #{id}".format(id=self.id)
+                print res
+                rc = False
+        except Exception as ex:
+            print ex.message
+            print
             print res
-            return False
-
-        self.id = res["number"]
-        self.title = res["title"]
-        self.state = res["runs"][0]["result"]
-
-        return True
+            rc = False
+        finally:
+            return rc
 
     @property
     def link(self):
@@ -84,12 +92,13 @@ class prs_monitor(object):
     def update(self):
         time_passed = 0
         while self.keep_running:
-            if time_passed == STEEP_TIME:
+            if time_passed <= STEEP_TIME:
                 print "DEBUG: Updating statuses"
                 self.update_pr_statuses()
                 map(lambda t:t.join, self.update_threads)
                 self.update_threads = []
                 time_passed = 0
+                time_passed += 5
 
             sleep(5)
 
