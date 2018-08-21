@@ -8,14 +8,15 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="static/bootstrap.css">
 </head>
 <body>
     <div>
         <br>
         <form action="/change">
             RP ID: <input type="text" name="id">
-            <input type="submit" name="action" value="add">
-            <input type="submit" name="action" value="remove">
+            <input type="submit" name="action" value="Add">
+            <input type="submit" name="action" value="Remove">
         </form>
         <br>
 
@@ -35,7 +36,18 @@
 
             <td>{{ pr.title }}</td>
             <td>{{ pr.id }} </td>
-            <td>{{ pr.state }} </td>
+            {% if pr.state == "passed" %}
+                <td><span class="badge badge-pill badge-success">{{ pr.state }} </span></td>
+            {% elif pr.state == "failed (1/2)" %}
+                <td><span class="badge badge-pill badge-warning">{{ pr.state }} </span></td>
+            {% elif pr.state == "failed (2/2)" %}
+                <td><span class="badge badge-pill badge-danger">{{ pr.state }} </span></td>
+            {% elif pr.state == "pending" %}
+                <td><span class="badge badge-pill badge-primary">{{ pr.state }} </span></td>
+            {% else %}
+                <td><span class="badge badge-pill badge-secondary">{{ pr.state }} </span></td>
+            {% endif %}
+
             <td><a href={{ pr.github_link }} target="_blank">link </a> </td>
             <td><a href={{ pr.prt_link }} target="_blank">link </a> </td>
 

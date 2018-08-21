@@ -19,14 +19,19 @@ STEEP_TIME = 30
 class pr(object):
 
     def __init__(self, id, title="Unknown", state="Unknown"):
-        self.id = id
+        self.id = int(id)
         self.title = title
         self.state = state
+        self.stream_status = dict()
 
         print "PR Created: {pr}".format(pr=self)
 
     def __str__(self):
         return "ID:{id} TITLE:{title} STATE:{state}".format(**self.__dict__)
+
+    def get_streams_status(self):
+        requests.get()
+        task_id = None
 
     def update(self):
         rc = True
@@ -57,11 +62,12 @@ class pr(object):
     def prt_link(self):
         return PRT_LINK.format(id=self.id)
 
-
     @property
     def github_link(self):
         return GITHUB_LINK.format(id=self.id)
 
+    def __getitem__(self, version):
+        return getattr(self.stream_status, version, None)
 
 class prs_monitor(object):
     def __init__(self, pr_list_file):
@@ -85,6 +91,19 @@ class prs_monitor(object):
         else:
             self.prs =[]
 
+    def sort_prs(self):
+        def get_rank(pr):
+            ranks = [("[1LP][RFR]", 1), ("[RFR][1LP]", 1), ("[1LP][WIP]", 2), ("[WIP][1LP]", 2), ("[RFR]", 3),
+                     ("[WIPTEST]", 4), ("[WIP]", 5)]
+
+            for rank in ranks:
+                if rank[0] in pr.title:
+                    return rank[1]
+            return max(ranks, key=lambda x:x[1])[1] + 1
+
+        self.prs = map(lambda t:t[1], sorted([(get_rank(pr), pr) for pr in self.prs]))
+
+
     def dump_prs(self):
         print "Dumpping..."
         ids = ["{id}\n".format(id=pr.id) for pr in self.prs]
@@ -93,6 +112,7 @@ class prs_monitor(object):
             f.writelines(ids)
 
     def update_pr_statuses(self):
+        print "DEBUG: Updating statuses"
         for pr in self.prs:
             t = Thread(target=pr.update)
             t.daemon = True
@@ -102,12 +122,13 @@ class prs_monitor(object):
     def update(self):
         time_passed = 0
         while self.keep_running:
+            print "DEBUG: timer triggered update"
             if time_passed >= STEEP_TIME:
-                print "DEBUG: Updating statuses"
                 self.update_pr_statuses()
                 map(lambda t:t.join, self.update_threads)
                 self.update_threads = []
                 time_passed = 0
+            self.sort_prs()
             sleep(5)
             time_passed += 5
 
@@ -131,6 +152,7 @@ def teardown():
 
 @app.route('/')
 def show_deshboard():
+    monitor_instance.update_pr_statuses()
     return render_template("main.html", prs=monitor_instance.prs)
 
 @app.route('/change')
@@ -146,4 +168,4 @@ def change_pr():
 
 if __name__ == '__main__':
     atexit.register(teardown)
-    app.run()
+    app.run(port=5000)
