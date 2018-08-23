@@ -160,7 +160,7 @@ def change_pr():
     action = request.args.get("action")
     id = int(request.args.get("id"))
 
-    actions = {"add": monitor_instance.add_pr, "remove": monitor_instance.remove_pr}
+    actions = {"Add": monitor_instance.add_pr, "Remove": monitor_instance.remove_pr}
 
     actions[action](id)
 
